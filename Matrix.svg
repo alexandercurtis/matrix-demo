@@ -1,0 +1,809 @@
+<?xml version="1.0"?>
+
+<!--
+  matrix_demo.svg
+
+  Demonstration of a 2x2 square matrix used as a transform of a 2D plane
+
+  (c) Alexander Curtis 2009
+  -->
+
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 800 600" onload="init()">
+
+  <title id="title">Demonstration of a 2x2 square matrix used as a transform of a 2D plane</title>
+
+  <script type="text/ecmascript"><![CDATA[
+
+    // Display    (view)
+    var SVG_NAMESPACE_URI = "http://www.w3.org/2000/svg";
+    var SCALE = {x:40, y:-40};
+    var ORIGIN = {x:350,y:350};
+    var MODEL_BOUNDARY = {left: -5, right: 5, top: 5, bottom: -5 };
+    var BOUNDARY = {left: MODEL_BOUNDARY.left * SCALE.x + ORIGIN.x, right: MODEL_BOUNDARY.right * SCALE.x + ORIGIN.x, top: MODEL_BOUNDARY.top * SCALE.x + ORIGIN.x, bottom: MODEL_BOUNDARY.bottom * SCALE.x + ORIGIN.x };
+
+    // Document contents  (model)
+    var nodes = new Array();
+    var paths = new Array();
+    var u = {x:1, y:0};
+    var v = {x:0, y:1};
+
+    // Interactivity   (controller)
+    var dragObject  = null;
+    var dragLine  = null;
+    var dragUV = "";
+    var mouseOffset = null;
+    document.onmousemove = mouseMove;
+    document.onmouseup   = mouseUp;
+    var paths = new Array();
+
+    function showImage()
+    {
+      for( var i in paths )
+      {
+        var path = paths[i];
+        var elem = document.getElementById("path"+i);
+
+        var d = "";
+        var x=0;
+        var y=0;
+        for( var j in path )
+        {
+          var coord = path[j];
+          if( j %2 == 0 )
+          {
+            x = coord;
+          }
+          else
+          {
+            y = coord;
+
+            var x1 = u.x*x + v.x*y;
+            var y1 = u.y*x + v.y*y;
+            x1 = x1 * SCALE.x + ORIGIN.x;
+            y1 = y1 * SCALE.y + ORIGIN.y;
+            if( j == 1 )
+            {
+              d += "M ";
+            }
+            else
+            {
+              d += " L ";
+            }
+            d += x1 + "," + y1;
+          }
+        }
+        elem.setAttributeNS(null, "d", d);
+
+      }
+
+    }
+
+    function showOriginalImage()
+    {
+      for( var i in paths )
+      {
+        var path = paths[i];
+        var elem = document.getElementById("opath"+i);
+
+        var d = "";
+        var x=0;
+        var y=0;
+        for( var j in path )
+        {
+          var coord = path[j];
+          if( j %2 == 0 )
+          {
+            x = coord;
+          }
+          else
+          {
+            y = coord;
+
+            var x1 = x;
+            var y1 = y;
+            x1 = x1 * SCALE.x + ORIGIN.x;
+            y1 = y1 * SCALE.y + ORIGIN.y;
+            if( j == 1 )
+            {
+              d += "M ";
+            }
+            else
+            {
+              d += " L ";
+            }
+            d += x1 + "," + y1;
+          }
+        }
+        elem.setAttributeNS(null, "d", d);
+
+      }
+
+    }
+
+    function initImage()
+    {
+      // Establish clipping rectangle
+      var elem = document.createElementNS(SVG_NAMESPACE_URI, "clipPath");
+      elem.setAttributeNS(null, "id", "boundingbox" );
+      var elemRect = document.createElementNS(SVG_NAMESPACE_URI, "rect");
+      elemRect.setAttributeNS(null, "x", BOUNDARY.left );
+      elemRect.setAttributeNS(null, "y", BOUNDARY.bottom );
+      elemRect.setAttributeNS(null, "width", BOUNDARY.right-BOUNDARY.left );
+      elemRect.setAttributeNS(null, "height", BOUNDARY.top-BOUNDARY.bottom );
+      elem.appendChild(elemRect);
+      document.documentElement.appendChild(elem);
+
+      paths[0] = new Array( -1.70321519587966,-1.61747739646152,-1.63726301682169,-1.72300092232672,-0.684253961625943,-2,-0.539159154574262,-1.9670239323446,-0.387469133991502,-1.8318220002735,-0.377576259010923,-1.64056058913634,-1.01401486785258,-0.730420465639777,-1.13602640567189,-0.717230038577616,-1.3009068642536,-0.918384215327436,-1.42951362654079,-1.01071731413048,-1.62407257882274,-1.06018136092962,-1.6900247688175,-1.14262158475208,-1.6636438928196,-1.32728778235816,-1.6636438928196,-1.50206099561574,-1.70321519587966,-1.61747739646152);
+      paths[1] = new Array( 0.52596865095456,-1.7955482711686,0.624896963288679,-1.96042871881352,0.86562242122498,-1.99670244791842,1.0997526656302,-1.85490519294832,1.68342955528642,-1.4492992873671,1.70321519587966,-1.3470734229514,1.48887059206768,-1.16900254824432,1.39323994118306,-0.987634012087736,1.37345430058982,-0.839241543586558,1.29101396739944,-0.826051116524397,1.18878810298374,-0.971145923576078,0.981038712702841,-1.06347902237912,0.868920082674479,-0.997526777700398,0.819455926507419,-0.872217720609876,0.7897774109336,-0.796372710318496,0.6150040883081,-0.796372710318496,0.578730468571118,-0.981038798556656,0.5820280206527,-1.35366863648248,0.51937343742348,-1.69991762028398,0.52596865095456,-1.7955482711686,0.52596865095456,-1.7955482711686);
+      paths[2] = new Array( -0.413849988115822,-1.8647980679289,-0.272052733145723,-1.81533391176184,0.311624047142579,-1.78565539618802,0.555647166528379,-1.85160764086674);
+      paths[3] = new Array( -0.453421269302303,-1.51525153204582,-0.268755181064142,-1.59439409441878,0.130255510986,-1.56801324029446,0.40065948449612,-1.44270407383602,0.5820280206527,-1.26793075121052);
+      paths[4] = new Array( 0.793075072383098,-0.812860689462237,0.911788915942541,-0.694146736534877,1.21846661855756,-0.750206106233017,1.26463311327512,-0.839241543586558);
+      paths[5] = new Array( -0.555647133718004,-1.36685906354464,-0.413849988115822,-1.32399012090866,-0.410552326666323,-1.1755977617754,-0.90519375709542,-0.733718127089275,-0.98433637415234,-0.545754377401615);
+      paths[6] = new Array( 0.74690846829762,-0.786479835337916,0.793075072383098,-0.697444397984376,0.756801343278199,-0.176422091557376,0.5820280206527,0.166529230794626,0.334707349185318,0.819455917211146,0.288540854467758,0.756801333981926,0.150041260947158,0.707337177814867,-0.0708985563959031,0.562242370763186,-0.232481451959242,0.591920886337006,-0.466611696364463,0.793074953718908,-0.450123717220722,0.562242370763186,-0.631492144009384,0.258862329597665,-0.700741940769684,0.0313272987235247,-0.849134398334072,-0.291838492403154,-0.90189615032988,-0.753503767682515);
+      paths[7] = new Array( -1.17889532643429,-0.750206106233017,-1.22506185396222,-0.598516085650256,-1.08656227137842,-0.357790627713955,-0.892003319096468,0.130255501689726,-0.568837560780164,0.605111313399166,-0.529266279593683,0.735805974852837,-0.578730435760743,1.41302555060644,-0.568837560780164,1.41962076413752,-0.476504571345042,1.81203627546696,-0.183017295792183,1.9901071731413,0.110469870392759,2,0.40065948449612,1.8845836789928,0.591920895633278,1.64056059241738,0.66446824447516,1.32069248461378,0.644682603881919,1.12943115003416,0.730420489153878,0.826051130742226,0.829348692120081,0.591920886337006,1.19208576443324,0.0774937934410854,1.30420450382952,-0.150041237433055,1.40643036824522,-0.572135231525936,1.37015663914032,-0.733718127089275,1.33058535795384,-0.829348777973896);
+      paths[8] = new Array( -0.295136035188462,-0.351195414182875,-0.328112102843863,-0.684253970922216,-0.295136035188462,-0.892003361203116);
+      paths[9] = new Array( -0.272052733145723,0.199505298450027,-0.215993363447584,0.140148376670305,-0.120362712562963,0.199505298450027);
+      paths[10] = new Array( -0.690849175157023,0.0544104913983464,-0.483099784876122,0.150041251650884,-0.591920862822903,0.235779027554926);
+      paths[11] = new Array( 0.717565493494796,-0.108626341260696,0.216236630506555,0.154862736295391,0.454076415938709,0.196834424535918);
+      paths[12] = new Array( -0.424997859950109,0.819414794874153,-0.271101560366926,0.726144413017844,-0.103214698036901,0.730807861021513,0.134624978027336,0.821746628243905,0.286189553608684,0.933671163029019);
+      paths[13] = new Array( -0.401680182460094,1.0036240205104,-0.464637824188802,1.14119797866095,-0.471633105562223,1.3184118791766,-0.40634373983168,1.42567292221088,-0.289755680485355,1.42800468995988,-0.205812194636384,1.30675307324197,-0.187158183885872,1.19716026245869,-0.215139309379557,1.14586150322216);
+      paths[14] = new Array( -0.0285983269311025,1.15285678459558,-0.0355936083045238,1.25312254625643,0.00171463193233378,1.38370121209677,0.0903215657849746,1.44665877726793,0.265203709488421,1.44199525270672,0.349147085969475,1.29509425637054,0.374796487461325,1.15518854140779,0.32116596047579,1.05025926612251,0.283857720238932,1.0036240205104);
+      paths[15] = new Array( -0.464637824188802,0.800760784123642,-0.4879553923109,0.889367717976282,-0.404012015829846,1.00828754507161,-0.243120434873242,1.13420268635073,-0.210475752007971,1.15285678459558,-0.0612430097963737,1.14819326003437,0.0133733613094241,1.13187092953852,0.132293254025501,1.06424982886935,0.29551655898394,1.01061931282061,0.363137648716317,0.940666455339232,0.332824799220798,0.831073633619161);
+      paths[16] = new Array( -0.224466314754812,1.0852356948632,-0.257110997620084,1.05725454749593);
+      paths[17] = new Array( -0.0729018485413819,1.10622154992026,-0.0216030455576813,1.06891335343056);
+      paths[18] = new Array( -0.352713212846145,1.05725454749593,-0.408675463833515,1.11088507448147,-0.434324865325365,1.19249673789748,-0.420334302578523,1.27644016906249,-0.345717931472725,1.30442130549297,-0.287423847115603,1.25778607081765,-0.271101560366926,1.16451559053021,-0.271101560366926,1.11788035585489);
+      paths[19] = new Array( 0.0623404402912898,1.10622154992026,0.0553450495499513,1.19716026245869,0.069335721664711,1.27410840131349,0.118302691278659,1.30908483005418,0.209241349133134,1.29975778093176,0.255876594745247,1.22514139888917,0.265203709488421,1.13886621091194,0.234890750624984,1.08989920848762,0.164937936890772,1.05492277974693);
+      paths[20] = new Array( 0.171933218264194,1.26944487675228,0.216236630506555,1.22747316663817);
+      paths[21] = new Array( -0.34338620747089,1.25079077850743,-0.308409800603784,1.20415554383211);
+      paths[22] = new Array( -0.842383237089379,-0.0549959236430789,-0.97063012424392,-0.374447252186535,-0.982288941115345,-0.551661119891816);
+      paths[23] = new Array( 0.768864187110579,0.101232209309856,0.976391013679297,-0.115621732002035,1.03002154066483,-0.306826162454158,0.962400450932455,-0.693898580729991);
+
+      for( var i in paths )
+      {
+        var oelem = document.createElementNS(SVG_NAMESPACE_URI, "path");
+        oelem.setAttributeNS(null, "id", "opath"+i );
+        oelem.setAttributeNS(null, "class", "opath" );
+        document.documentElement.appendChild(oelem);
+      }
+      for( var i in paths )
+      {
+        var elem = document.createElementNS(SVG_NAMESPACE_URI, "path");
+        elem.setAttributeNS(null, "id", "path"+i );
+        elem.setAttributeNS(null, "clip-path", "url(#boundingbox)" );
+        document.documentElement.appendChild(elem);
+      }
+    }
+
+    function mouseMove( ev )
+    {
+      ev           = ev || window.event;
+      var mousePos = mouseCoords(ev);
+
+      if( dragObject )
+      {
+        // Screen coordinates
+        var sx = mousePos.x - mouseOffset.x;
+        var sy = mousePos.y - mouseOffset.y;
+
+        // New screen coordinates
+        var nx = sx;
+        var ny = sy;
+
+        // Model coordinates
+        var mx = (sx - ORIGIN.x) / SCALE.x;
+        var my = (sy - ORIGIN.y) / SCALE.y;
+
+        // Nearest grid point
+        var ax = Math.floor(mx+0.5);
+        var ay = Math.floor(my+0.5);
+
+        // Grid error
+        var ex = ax-mx;
+        var ey = ay-my;
+
+        // Snap to grid lines
+        if( Math.abs(ex) < 0.15 )
+        {
+          nx = ax * SCALE.x + ORIGIN.x;
+          mx = ax;
+        }
+        if( Math.abs(ey) < 0.15 )
+        {
+          ny = ay * SCALE.y + ORIGIN.y;
+          my = ay;
+        }
+
+        // Bound within model
+        if( mx > 5 )
+        {
+          nx = 5 * SCALE.x + ORIGIN.x;
+          mx = 5;
+        }
+        else if( mx < -5 )
+        {
+          nx = -5 * SCALE.x + ORIGIN.x;
+          mx = -5;
+        }
+        if( my > 5 )
+        {
+          ny = 5 * SCALE.y + ORIGIN.y;
+          my = 5;
+        }
+        else if( my < -5 )
+        {
+          ny = -5 * SCALE.y + ORIGIN.y;
+          my = -5;
+        }
+
+        dragObject.setAttributeNS(null, "cx", nx);
+        dragObject.setAttributeNS(null, "cy", ny);
+
+        if( dragLine )
+        {
+          dragLine.setAttributeNS(null, "x2", nx);
+          dragLine.setAttributeNS(null, "y2", ny);
+        }
+
+        // Update matrix
+        if( dragUV == "u" )
+        {
+          u.x = mx;
+          u.y = my;
+        }
+        else
+        {
+          v.x = mx;
+          v.y = my;
+        }
+        ShowMatrix();
+        showImage();
+
+        return false;
+      }
+
+    }
+
+    function ShowMatrix()
+    {
+      var m = new Array( new Array( u.x, v.x ), new Array( u.y, v.y ) );
+      document.getElementById("m00").firstChild.nodeValue = m[0][0].toFixed(2);
+      document.getElementById("m01").firstChild.nodeValue = m[0][1].toFixed(2);
+      document.getElementById("m10").firstChild.nodeValue = m[1][0].toFixed(2);
+      document.getElementById("m11").firstChild.nodeValue = m[1][1].toFixed(2);
+
+      var det = m[0][0] * m[1][1] - m[0][1] * m[1][0];
+      document.getElementById("det").firstChild.nodeValue = det.toFixed(2);
+
+      if( det != 0 )
+      {
+        document.getElementById("i00").firstChild.nodeValue = (m[1][1]/det).toFixed(2);
+        document.getElementById("i01").firstChild.nodeValue = (-1.0*m[0][1]/det).toFixed(2);
+        document.getElementById("i10").firstChild.nodeValue = (-1.0*m[1][0]/det).toFixed(2);
+        document.getElementById("i11").firstChild.nodeValue = (m[0][0]/det).toFixed(2);
+        ShowElem( document.getElementById("i01"), true )
+        ShowElem( document.getElementById("i10"), true )
+        ShowElem( document.getElementById("i11"), true )
+      }
+      else
+      {
+        document.getElementById("i00").firstChild.nodeValue = "Singular";
+        ShowElem( document.getElementById("i01"), false )
+        ShowElem( document.getElementById("i10"), false )
+        ShowElem( document.getElementById("i11"), false )
+      }
+
+      var rank = 2;
+      if( ( m[0][0] == 0 && m[1][0] == 0 ) || ( Math.abs(m[0][1] / m[0][0] - m[1][1] / m[1][0]) < 0.000001) )
+      {
+        // The columns are linearly dependent
+        rank = 1;
+      }
+      document.getElementById("rank").firstChild.nodeValue = rank;
+
+      var a = 1.0;
+      var b = -m[0][0]-m[1][1];
+      var c = m[0][0]*m[1][1]-m[0][1]*m[1][0];               // det
+      var bb = b*b;
+      var ac4 = 4*a*c;
+      var e1r = 0;
+      var e2r = 0;
+      var e1i = 0;
+      var e2i = 0;
+      if(bb>=ac4)
+      {
+        // Real eigenvalues
+        var s = Math.sqrt( bb - ac4 );
+        var a2 = 2*a;
+        e1r = (-b + s)  / a2;
+        e2r = (-b - s)  / a2;
+        e1i = 0;
+        e2i = 0;
+        document.getElementById("e1").firstChild.nodeValue = e1r.toFixed(2);
+        document.getElementById("e2").firstChild.nodeValue = e2r.toFixed(2);
+      }
+      else
+      {
+        // Complex eigenvalues
+        var s = Math.sqrt( ac4 - bb );
+        var a2 = 2*a;
+        e1r = -b/a2;
+        e2r = e1r;
+        e1i = s/a2;
+        e2i = -e1i;
+        var s1 = e1r.toFixed(2);
+        var s2 = s1;
+        if( e1i > 0 )
+        {
+          s1 += " + " + e1i.toFixed(2) + "i";
+        }
+        else
+        {
+          s1 += " - " + (-1.0*e1i).toFixed(2) + "i";
+        }
+        if( e2i > 0 )
+        {
+          s2 += " + " + e2i.toFixed(2) + "i";
+        }
+        else
+        {
+          s2 += " - " + (-1.0*e2i).toFixed(2) + "i";
+        }
+        document.getElementById("e1").firstChild.nodeValue = s1;
+        document.getElementById("e2").firstChild.nodeValue = s2;
+      }
+
+      var bDrawCirc = false;
+      if( Math.round(e1i*100.0)/100.0 == 0.00 )
+      {
+        if( (Math.round((m[0][0]-e1r)*100.0))/100.0 == 0.00
+         && (Math.round((m[0][1])    *100.0))/100.0 == 0.00
+         && (Math.round((m[1][0])    *100.0))/100.0 == 0.00
+         && (Math.round((m[1][1]-e1r)*100.0))/100.0 == 0.00 )
+        {
+          bDrawCirc = true;
+        }
+      }
+      if( Math.round(e2i*100.0)/100.0 == 0.00 )
+      {
+        if( (Math.round((m[0][0]-e2r)*100.0))/100.0 == 0.00
+         && (Math.round((m[0][1])    *100.0))/100.0 == 0.00
+         && (Math.round((m[1][0])    *100.0))/100.0 == 0.00
+         && (Math.round((m[1][1]-e2r)*100.0))/100.0 == 0.00 )
+        {
+          bDrawCirc = true;
+        }
+      }
+      if( bDrawCirc )
+      {
+        // Hide lines
+        //ShowElem( document.getElementById("eline1") );
+        //ShowElem( document.getElementById("eline2") );
+        //ShowElem( document.getElementById("eline3") );
+        //ShowElem( document.getElementById("eline4") );
+
+        // Draw circle
+        ShowElem( document.getElementById("ecirc1"), true );
+      }
+      else
+      {
+        // Hide circle
+        ShowElem( document.getElementById("ecirc1"), false );
+      }
+
+
+      {
+        var c00r = m[0][0];
+        var c00i = 0;
+        var c01r = m[0][1];
+        var c01i = 0;
+        var c10r = m[1][0];
+        var c10i = 0;
+        var c11r = m[1][1];
+        var c11i = 0;
+
+        // Draw lines
+        DrawEigenVector( c00r-e1r, c00i-e1i, -c01r, -c01i, document.getElementById("eline1") );
+        DrawEigenVector( -c10r, -c10i, c11r-e1r, c11i-e1i, document.getElementById("eline2") );
+        DrawEigenVector( c00r-e2r, c00i-e2i, -c01r, -c01i, document.getElementById("eline3") );
+        DrawEigenVector( -c10r, -c10i, c11r-e2r, c11i-e2i, document.getElementById("eline4") );
+
+      }
+    }
+
+    function ShowElem( elem, bVisible )
+    {
+      if( bVisible )
+      {
+        if( elem )
+        {
+          elem.setAttributeNS(null, "visibility", "visible");
+        }
+      }
+      else
+      {
+        if( elem )
+        {
+          elem.setAttributeNS(null, "visibility", "hidden");
+        }
+      }
+    }
+
+    function DrawEigenVector( nr, ni, dr, di, lineElem )
+    {
+      // Ensure 0.001 is 0.0
+      nr = (Math.round(nr*100.0))/100.0;
+      ni = (Math.round(ni*100.0))/100.0;
+      dr = (Math.round(dr*100.0))/100.0;
+      di = (Math.round(di*100.0))/100.0;
+
+      var bLineVisible = false;
+
+      var x1 = 0;
+      var y1 = 0;
+      var x2 = 0;
+      var y2 = 0;
+      if( ni == 0.00 && di == 0.00 )
+      {
+        // All real values
+        if( nr == 0.00 )
+        {
+          if( dr != 0.00 )
+          {
+
+            // Draw the line y=0
+            x1 = MODEL_BOUNDARY.left;
+            y1 = 0;
+            x2 = MODEL_BOUNDARY.right;
+            y2 = 0;
+            bLineVisible = true;
+          }
+        }
+        else if( dr == 0.00 )
+        {
+          // Draw the line x=0
+          x1 = 0;
+          y1 = MODEL_BOUNDARY.bottom;
+          x2 = 0;
+          y2 = MODEL_BOUNDARY.top;
+          bLineVisible = true;
+        }
+        else
+        {
+          // Draw the line y = (nr/dr)x
+          // Find quadrant
+          var grad = (nr/dr);
+          if( Math.abs( grad ) > 1.0 )
+          {
+            x1 = MODEL_BOUNDARY.top / grad;
+            y1 = MODEL_BOUNDARY.top;
+            x2 = MODEL_BOUNDARY.bottom / grad;
+            y2 = MODEL_BOUNDARY.bottom;
+          }
+          else
+          {
+            x1 = MODEL_BOUNDARY.left;
+            y1 = MODEL_BOUNDARY.left*grad;
+            x2 = MODEL_BOUNDARY.right;
+            y2 = MODEL_BOUNDARY.right*grad;
+          }
+          bLineVisible = true;
+        }
+      }
+
+      if( bLineVisible )
+      {
+        if( lineElem )
+        {
+
+          lineElem.setAttributeNS(null, "x1", x1 * SCALE.x + ORIGIN.x);
+          lineElem.setAttributeNS(null, "y1", y1 * SCALE.y + ORIGIN.y);
+          lineElem.setAttributeNS(null, "x2", x2 * SCALE.x + ORIGIN.x);
+          lineElem.setAttributeNS(null, "y2", y2 * SCALE.y + ORIGIN.y);
+          lineElem.setAttributeNS(null, "visibility", "visible");
+        }
+      }
+      else
+      {
+        if( lineElem )
+        {
+          lineElem.setAttributeNS(null, "visibility", "hidden");
+        }
+      }
+    }
+
+    function complexString(r,i)
+    {
+      if( i == 0 )
+      {
+        return r.toFixed(2);
+      }
+      if( i<0 )
+      {
+        return r.toFixed(2) + "-" + (-1*i).toFixed(2) + "i";
+      }
+      return r.toFixed(2) + "+" + i.toFixed(2) + "i";
+    }
+
+    function mouseUp()
+    {
+      dragObject = null;
+      dragLine = null;
+      dragUV = "";
+    }
+
+    function makeDraggable( item, line, uv )
+    {
+      if( !item || !line || !uv || uv=="" )
+      {
+        return;
+      }
+      //item.line = line;
+      item.onmousedown = function( ev )
+      {
+        dragLine = line;
+        dragUV = uv;
+        dragObject  = this;
+        mouseOffset = getMouseOffset( this, ev );
+        return false;
+      }
+    }
+
+
+    function getMouseOffset( target, ev )
+    {
+      ev = ev || window.event;
+
+      var docPos    = getPosition( target );
+      var mousePos  = mouseCoords( ev );
+      return {x:mousePos.x - docPos.x, y:mousePos.y - docPos.y};
+    }
+
+    function mouseCoords( ev )
+    {
+      /*if(ev.pageX || ev.pageY)
+      {
+        return {x:ev.pageX, y:ev.pageY};
+      }  */
+      return {
+        x:ev.clientX,// + document.body.scrollLeft - document.body.clientLeft,
+        y:ev.clientY// + document.body.scrollTop  - document.body.clientTop
+      };
+    }
+
+
+    function getPosition( elem )
+    {
+      var left = 0;
+      var top  = 0;
+
+      left = elem.getAttributeNS(null, "cx");
+      top = elem.getAttributeNS(null, "cy");
+       /*
+      while( elem.offsetParent )
+      {
+        left += elem.offsetLeft;
+        top  += elem.offsetTop;
+        elem  = elem.offsetParent;
+      }
+
+      left += elem.offsetLeft;
+      top  += elem.offsetTop;
+                                */
+      return { x:left, y:top };
+    }
+
+    function init()
+    {
+      // Initial grid positions
+      var n=0;
+      for( var x = -5; x<=5; ++x )
+      {
+        nodes[n++] = {x:x, y:-5};
+        nodes[n++] = {x:x, y:5};
+      }
+      for( var y = -5; y<=5; ++y )
+      {
+        nodes[n++] = {x:-5, y:y};
+        nodes[n++] = {x:5, y:y};
+      }
+      for( var p = 0; p<n/2; ++p )
+      {
+        paths[p] = new Array(p*2,p*2+1);
+      }
+      for( var p = 0; p<n/2; ++p )
+      {
+        var l = document.createElementNS(SVG_NAMESPACE_URI, "line");
+        var id = "l" + p;
+        l.setAttributeNS(null, "id", id);
+        l.setAttributeNS(null, "x1", nodes[paths[p][0]].x * SCALE.x + ORIGIN.x);
+        l.setAttributeNS(null, "y1", nodes[paths[p][0]].y * SCALE.y + ORIGIN.y);
+        l.setAttributeNS(null, "x2", nodes[paths[p][1]].x * SCALE.x + ORIGIN.x);
+        l.setAttributeNS(null, "y2", nodes[paths[p][1]].y * SCALE.y + ORIGIN.y);
+        document.documentElement.appendChild(l);
+      }
+
+
+        initImage();
+        showImage();
+        showOriginalImage();
+
+
+      // Add Eigenvector lines
+      var eline1 = document.createElementNS(SVG_NAMESPACE_URI, "line");
+      var id = "eline1";
+      eline1.setAttributeNS(null, "id", id);
+      eline1.setAttributeNS(null, "x1", 0 * SCALE.x + ORIGIN.x);
+      eline1.setAttributeNS(null, "y1", 0 * SCALE.y + ORIGIN.y);
+      eline1.setAttributeNS(null, "x2", 0 * SCALE.x + ORIGIN.x);
+      eline1.setAttributeNS(null, "y2", 0 * SCALE.y + ORIGIN.y);
+      eline1.setAttributeNS(null, "class", "eigenvector");
+      eline1.setAttributeNS(null, "visibility", "hidden");
+      document.documentElement.appendChild(eline1);
+      var eline2 = document.createElementNS(SVG_NAMESPACE_URI, "line");
+      var id = "eline2";
+      eline2.setAttributeNS(null, "id", id);
+      eline2.setAttributeNS(null, "x1", 0 * SCALE.x + ORIGIN.x);
+      eline2.setAttributeNS(null, "y1", 0 * SCALE.y + ORIGIN.y);
+      eline2.setAttributeNS(null, "x2", 0 * SCALE.x + ORIGIN.x);
+      eline2.setAttributeNS(null, "y2", 0 * SCALE.y + ORIGIN.y);
+      eline2.setAttributeNS(null, "class", "eigenvector");
+      eline2.setAttributeNS(null, "visibility", "hidden");
+      document.documentElement.appendChild(eline2);
+      var eline3 = document.createElementNS(SVG_NAMESPACE_URI, "line");
+      eline3.setAttributeNS(null, "id", "eline3");
+      eline3.setAttributeNS(null, "x1", 0 * SCALE.x + ORIGIN.x);
+      eline3.setAttributeNS(null, "y1", 0 * SCALE.y + ORIGIN.y);
+      eline3.setAttributeNS(null, "x2", 0 * SCALE.x + ORIGIN.x);
+      eline3.setAttributeNS(null, "y2", 0 * SCALE.y + ORIGIN.y);
+      eline3.setAttributeNS(null, "class", "eigenvector");
+      eline3.setAttributeNS(null, "visibility", "hidden");
+      document.documentElement.appendChild(eline3);
+      var eline4 = document.createElementNS(SVG_NAMESPACE_URI, "line");
+      eline4.setAttributeNS(null, "id", "eline4");
+      eline4.setAttributeNS(null, "x1", 0 * SCALE.x + ORIGIN.x);
+      eline4.setAttributeNS(null, "y1", 0 * SCALE.y + ORIGIN.y);
+      eline4.setAttributeNS(null, "x2", 0 * SCALE.x + ORIGIN.x);
+      eline4.setAttributeNS(null, "y2", 0 * SCALE.y + ORIGIN.y);
+      eline4.setAttributeNS(null, "class", "eigenvector");
+      eline4.setAttributeNS(null, "visibility", "hidden");
+      document.documentElement.appendChild(eline4);
+      var ecirc1 = document.createElementNS(SVG_NAMESPACE_URI, "circle");
+      ecirc1.setAttributeNS(null, "id", "ecirc1");
+      ecirc1.setAttributeNS(null, "cx", 0 * SCALE.x + ORIGIN.x);
+      ecirc1.setAttributeNS(null, "cy", 0 * SCALE.y + ORIGIN.y);
+      ecirc1.setAttributeNS(null, "r", 1.0 * SCALE.x);
+      ecirc1.setAttributeNS(null, "class", "eigencircle");
+      ecirc1.setAttributeNS(null, "visibility", "hidden");
+      document.documentElement.appendChild(ecirc1);
+
+      // Add u vector
+      var lu = document.createElementNS(SVG_NAMESPACE_URI, "line");
+      var id = "lu";
+      lu.setAttributeNS(null, "id", id);
+      lu.setAttributeNS(null, "x1", 0 * SCALE.x + ORIGIN.x);
+      lu.setAttributeNS(null, "y1", 0 * SCALE.y + ORIGIN.y);
+      lu.setAttributeNS(null, "x2", u.x * SCALE.x + ORIGIN.x);
+      lu.setAttributeNS(null, "y2", u.y * SCALE.y + ORIGIN.y);
+      lu.setAttributeNS(null, "class", "vector");
+      document.documentElement.appendChild(lu);
+
+
+      // Add v vector
+      var lv = document.createElementNS(SVG_NAMESPACE_URI, "line");
+      var id = "lv";
+      lv.setAttributeNS(null, "id", id);
+      lv.setAttributeNS(null, "x1", 0 * SCALE.x + ORIGIN.x);
+      lv.setAttributeNS(null, "y1", 0 * SCALE.y + ORIGIN.y);
+      lv.setAttributeNS(null, "x2", v.x * SCALE.x + ORIGIN.x);
+      lv.setAttributeNS(null, "y2", v.y * SCALE.y + ORIGIN.y);
+      lv.setAttributeNS(null, "class", "vector");
+      document.documentElement.appendChild(lv);
+
+
+      // Add vector handles
+      var c = document.createElementNS(SVG_NAMESPACE_URI, "circle");
+      c.setAttributeNS(null, "id", "cu");
+      c.setAttributeNS(null, "cx", u.x * SCALE.x + ORIGIN.x);
+      c.setAttributeNS(null, "cy", u.y * SCALE.y + ORIGIN.y);
+      c.setAttributeNS(null, "r", 5);
+      c.setAttributeNS(null, "onmouseover", "this.setAttributeNS(null, \"class\", \"highlight\");");
+      c.setAttributeNS(null, "onmouseout", "setAttributeNS(null, \"class\", \"\");");
+      makeDraggable(c,lu,"u");
+      document.documentElement.appendChild(c);
+
+
+      // Add vector handles
+      var c = document.createElementNS(SVG_NAMESPACE_URI, "circle");
+      c.setAttributeNS(null, "id", "cu");
+      c.setAttributeNS(null, "cx", v.x * SCALE.x + ORIGIN.x);
+      c.setAttributeNS(null, "cy", v.y * SCALE.y + ORIGIN.y);
+      c.setAttributeNS(null, "r", 5);
+      c.setAttributeNS(null, "onmouseover", "this.setAttributeNS(null, \"class\", \"highlight\");");
+      c.setAttributeNS(null, "onmouseout", "setAttributeNS(null, \"class\", \"\");");
+      makeDraggable(c,lv,"v");
+      document.documentElement.appendChild(c);
+      ShowMatrix();
+
+      }
+  ]]></script>
+
+  <style type="text/css">
+    line {
+      stroke-width: 1;
+      stroke: #bbeebb;
+    }
+    line.vector {
+      stroke-width: 3;
+      stroke: #ffffff;
+    }
+    line.eigenvector {
+      stroke-width: 1;
+      stroke: orange;
+    }
+
+    circle {
+      fill: #0000aa;
+      stroke-width: 2;
+      stroke: #ffffff;
+    }
+    circle.highlight {
+      fill: #00aaff;
+      stroke-width: 2;
+      stroke: #ffffff;
+    }
+    circle.eigencircle {
+      fill: none;
+      stroke-width: 1;
+      stroke: orange;
+    }
+
+    path {
+      fill: none;
+      stroke-width: 2;
+      stroke: #000000;
+    }
+    path.opath {
+      fill: none;
+      stroke-width: 1;
+      stroke: #bbeebb;
+    }
+  </style>
+
+  <rect x="-100%" y="-100%" width="300%" height="300%" fill="#555799"/>
+  <g font-family="Arial,Helvetica" font-size="14">
+    <text x="10" y="20" font-weight="bold" font-size="18">2x2 Square Matrix Demonstration</text>
+    <text x="10" y="38">Drag the unit vectors to modify the matrix. The matrix is used to transform the image of Tux the penguin.</text>
+    <text x="10" y="55">Orange lines show the directions of the eigenvectors. An orange circle indicates that eigenvectors exist in all directions.</text>
+
+    <text x="10" y="90" font-weight="bold" font-size="18">Matrix</text>
+    <text id="m00" x="10" y="110">0.00</text>
+    <text id="m01" x="60" y="110">0.00</text>
+    <text id="m10" x="10" y="140">0.00</text>
+    <text id="m11" x="60" y="140">0.00</text>
+
+
+    <text x="10" y="190" font-weight="bold" font-size="18">Determinant</text>
+    <text id="det" x="10" y="210">0.00</text>
+
+
+    <text x="10" y="260" font-weight="bold" font-size="18">Inverse</text>
+    <text id="i00" x="10" y="280">0.00</text>
+    <text id="i01" x="60" y="280">0.00</text>
+    <text id="i10" x="10" y="320">0.00</text>
+    <text id="i11" x="60" y="320">0.00</text>
+
+
+
+    <text x="10" y="370" font-weight="bold" font-size="18">Rank</text>
+    <text id="rank" x="10" y="390">0</text>
+
+
+
+    <text x="10" y="440" font-weight="bold" font-size="18">Eigenvalues</text>
+    <text id="e1" x="10" y="460">0.00</text>
+    <text id="e2" x="10" y="480">0.00</text>
+
+
+    <a xlink:href="http://alexandercurtis.net/"><text x="790" y="590" text-anchor="end">Copyright (c) 2009 Alexander Curtis</text></a>
+ </g>
+</svg>
