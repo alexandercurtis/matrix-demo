@@ -2,6 +2,8 @@
 
 An SVG/Javascript program to demonstrate the properties of a 2x2 matrix.
 
+[See Demo](http://alexandercurtis.github.io/matrix/Matrix.svg)
+
 ## To Run
 Open the file in a browser that supports SVG and Javascript
 
